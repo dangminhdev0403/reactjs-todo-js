@@ -1,16 +1,24 @@
-import React, { useRef, useState } from "react";
+import anime from "animejs/lib/anime.es.js"; // Import AnimeJS
+import React, { useEffect, useRef, useState } from "react";
+import "./App.css";
+import FilterPanel from "./component/FilterPanel";
 import Sidebar from "./component/Sidebar";
 import TodoItem from "./component/TodoItem";
 
 function App() {
   // ================= Hook =========================
   const refInput = useRef(null);
-  const [todoList, setTodoList] = useState([]);
+  const sidebarRef = useRef(null); // Ref cho Sidebar
+  const [todoList, setTodoList] = useState([
+    { id: 1, name: "Learn React", isImportant: false, isCompleted: false , isDelete: false, },
+    { id: 2, name: "Learn Nodejs", isImportant: false, isCompleted: false , isDelete: false, },
+  ]);
   const [showSidebar, setShowSidebar] = useState(false);
-
   const [isActive, setIsActive] = useState();
+  const [selectedFilter, setSelectedFilter] = React.useState("All");
 
   const selectedTodo = todoList.find((todo) => todo.id === isActive);
+
   // ================= Style ========================
   const appStyle = {
     display: "flex",
@@ -29,6 +37,31 @@ function App() {
     marginBottom: "10px",
   };
 
+  // ================= Animation với AnimeJS ========================
+  useEffect(() => {
+    if (showSidebar && sidebarRef.current) {
+      // Animation khi Sidebar xuất hiện
+      anime({
+        targets: sidebarRef.current,
+        translateX: ["100%", "0%"], // Trượt từ bên phải vào
+        opacity: [0, 1], // Từ trong suốt đến rõ
+        duration: 300,
+        easing: "easeInOutQuad",
+      });
+    }
+  }, [showSidebar]);
+
+  const hideSidebarWithAnimation = () => {
+    anime({
+      targets: sidebarRef.current,
+      translateX: "100%", // Trượt ra bên phải
+      opacity: 0, // Biến mất
+      duration: 300,
+      easing: "easeInOutQuad",
+      complete: () => setShowSidebar(false), // Ẩn Sidebar sau khi animation hoàn tất
+    });
+  };
+
   // ================ Function ======================
   const addTodo = (e) => {
     if (e.key === "Enter") {
@@ -41,17 +74,17 @@ function App() {
             name: newTask,
             isImportant: false,
             isCompleted: false,
+            isDelete: false,
           },
         ]);
-        refInput.current.value = ""; // Xóa nội dung ô nhập sau khi thêm
+        refInput.current.value = "";
       }
     }
   };
 
   const handleShowSidebar = (id) => {
     setIsActive(id);
-
-    setShowSidebar(true);
+    setShowSidebar(true); // Hiển thị Sidebar và chạy animation
   };
 
   const handleCompleteCheckbox = (id) => {
@@ -75,33 +108,51 @@ function App() {
   };
 
   return (
-    <div style={appStyle}>
-      <h2 style={{ color: "#4A90E2" }}>My Todo List</h2>
-      <input
-        ref={refInput}
-        type="text"
-        placeholder="Add a new todo"
-        style={inputStyle}
-        onKeyDown={addTodo}
+    <div className="container">
+      <FilterPanel
+        todoList = {todoList}
+        selectedFilter={selectedFilter}
+        setSelectedFilter={setSelectedFilter}
       />
-      {todoList.length === 0 && <p>No todo items</p>}{" "}
-      {todoList.map((todo) => (
-        <TodoItem
-          key={todo.id}
-          {...todo}
-          handeCompleteCheckbox={handleCompleteCheckbox}
-          handleShowSidebar={handleShowSidebar}
+      <div style={appStyle} className="main-content">
+        <h2 style={{ color: "#4A90E2" }}>My Todo List</h2>
+        <input
+          ref={refInput}
+          type="text"
+          placeholder="Add a new todo"
+          style={inputStyle}
+          onKeyDown={addTodo}
         />
-      ))}
-      {showSidebar == true && (
-        <Sidebar
-          key={selectedTodo.id}
-          setShowSidebar={setShowSidebar}
-          selectedTodo={selectedTodo}
-          handeCompleteCheckbox={handleCompleteCheckbox}
-          hanldeChangeInfo={hanldeChangeInfo}
-        />
-      )}
+        {todoList.length === 0 && <p>No todo items</p>}
+        {todoList
+          .filter((todo) => {
+            if (selectedFilter === "All") {
+              return true;
+            }
+            if (selectedFilter === "Important") return todo.isImportant;
+            if (selectedFilter === "Completed") return todo.isCompleted;
+            if (selectedFilter === "Delete") return todo.isDelete;
+          })
+          .map((todo) => (
+            <TodoItem
+              key={todo.id}
+              {...todo}
+              handeCompleteCheckbox={handleCompleteCheckbox}
+              handleShowSidebar={handleShowSidebar}
+            />
+          ))}
+        {showSidebar && (
+          <div ref={sidebarRef} style={{ position: "fixed", right: 0, top: 0 }}>
+            <Sidebar
+              key={selectedTodo.id}
+              setShowSidebar={hideSidebarWithAnimation} // Truyền hàm ẩn với animation
+              selectedTodo={selectedTodo}
+              handeCompleteCheckbox={handleCompleteCheckbox}
+              hanldeChangeInfo={hanldeChangeInfo}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 }

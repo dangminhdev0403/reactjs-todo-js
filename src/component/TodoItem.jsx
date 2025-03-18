@@ -23,7 +23,7 @@ function TodoItem(props) {
         <input
           type="checkbox"
           checked={props.isCompleted}
-          onChange={() => props.handeCompleteCheckbox(props.id)}
+          onChange={() => props.handleCompleteCheckbox(props.id)}
           onClick={(e) => e.stopPropagation()}
         />
         <p style={textStyle}>{props.name}</p>
