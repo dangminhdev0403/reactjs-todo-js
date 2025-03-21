@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { CATEGORY_ITEM } from "../constant";
 
 const Sidebar = (props) => {
   const data = props.selectedTodo;
@@ -9,6 +10,8 @@ const Sidebar = (props) => {
   const [isCompleted, setIsCompleted] = useState(
     props.selectedTodo.isCompleted
   );
+
+  const [category, setCategory] = useState(data.category);
 
   // ===================== STYLE ==================
 
@@ -78,7 +81,7 @@ const Sidebar = (props) => {
   };
 
   const handleSave = (e) => {
-    const newTodo = { ...data, name, isImportant, isCompleted };
+    const newTodo = { ...data, name, isImportant, isCompleted, category };
     props.hanldeChangeInfo(newTodo);
     e.preventDefault();
     props.setShowSidebar(false);
@@ -120,6 +123,24 @@ const Sidebar = (props) => {
             defaultChecked={isCompleted}
             onChange={(e) => setIsCompleted(e.target.checked)}
           />
+        </div>
+        <div style={checkboxContainer}>
+          <label htmlFor="sb-category">Is category</label>
+          <select
+            name="category"
+            id="category"
+            onChange={(e) => setCategory(e.target.value)}
+          >
+            {CATEGORY_ITEM.map((item) => (
+              <option
+                key={item.id}
+                value={item.id}
+                selected={item.id === category}
+              >
+                {item.label}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div style={buttonContainer}>

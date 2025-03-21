@@ -1,9 +1,10 @@
 import anime from "animejs/lib/anime.es.js"; // Import AnimeJS
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
 import "./App.css";
 import FilterPanel from "./component/FilterPanel";
 import Sidebar from "./component/Sidebar";
 import TodoItem from "./component/TodoItem";
+import { AppContext } from "./context/AppProvider";
 
 function App() {
   // ================= Hook =========================
@@ -16,6 +17,7 @@ function App() {
       isImportant: false,
       isCompleted: false,
       isDelete: false,
+      category: "personal",
     },
     {
       id: 2,
@@ -23,6 +25,7 @@ function App() {
       isImportant: false,
       isCompleted: false,
       isDelete: false,
+      category: "personal",
     },
   ]);
   const [showSidebar, setShowSidebar] = useState(false);
@@ -32,10 +35,12 @@ function App() {
   const selectedTodo = todoList.find((todo) => todo.id === isActive);
 
   const [search, setSearch] = useState("");
+  const { selectedCategory } = useContext(AppContext);
 
   const filterTodo = useMemo(() => {
     return todoList.filter((todo) => {
       if (!todo.name.includes(search)) return false;
+      if (selectedCategory && todo.category !== selectedCategory) return false;
       if (selectedFilter === "All") {
         return true;
       }
@@ -43,7 +48,7 @@ function App() {
       if (selectedFilter === "Completed") return todo.isCompleted;
       if (selectedFilter === "Delete") return todo.isDelete;
     });
-  }, [selectedFilter, todoList, search]);
+  }, [selectedFilter, todoList, search, selectedCategory]);
 
   // ================= Style ========================
   const appStyle = {
@@ -101,6 +106,7 @@ function App() {
             isImportant: false,
             isCompleted: false,
             isDelete: false,
+            category: "personal",
           },
         ]);
         refInput.current.value = "";
