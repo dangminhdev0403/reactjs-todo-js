@@ -1,5 +1,5 @@
 import anime from "animejs/lib/anime.es.js"; // Import AnimeJS
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import "./App.css";
 import FilterPanel from "./component/FilterPanel";
 import Sidebar from "./component/Sidebar";
@@ -10,14 +10,40 @@ function App() {
   const refInput = useRef(null);
   const sidebarRef = useRef(null); // Ref cho Sidebar
   const [todoList, setTodoList] = useState([
-    { id: 1, name: "Learn React", isImportant: false, isCompleted: false , isDelete: false, },
-    { id: 2, name: "Learn Nodejs", isImportant: false, isCompleted: false , isDelete: false, },
+    {
+      id: 1,
+      name: "Learn React",
+      isImportant: false,
+      isCompleted: false,
+      isDelete: false,
+    },
+    {
+      id: 2,
+      name: "Learn Nodejs",
+      isImportant: false,
+      isCompleted: false,
+      isDelete: false,
+    },
   ]);
   const [showSidebar, setShowSidebar] = useState(false);
   const [isActive, setIsActive] = useState();
   const [selectedFilter, setSelectedFilter] = React.useState("All");
 
   const selectedTodo = todoList.find((todo) => todo.id === isActive);
+
+  const [search, setSearch] = useState("");
+
+  const filterTodo = useMemo(() => {
+    return todoList.filter((todo) => {
+      if (!todo.name.includes(search)) return false;
+      if (selectedFilter === "All") {
+        return true;
+      }
+      if (selectedFilter === "Important") return todo.isImportant;
+      if (selectedFilter === "Completed") return todo.isCompleted;
+      if (selectedFilter === "Delete") return todo.isDelete;
+    });
+  }, [selectedFilter, todoList, search]);
 
   // ================= Style ========================
   const appStyle = {
@@ -110,7 +136,9 @@ function App() {
   return (
     <div className="container">
       <FilterPanel
-        todoList = {todoList}
+        search={search}
+        setSearch={setSearch}
+        todoList={todoList}
         selectedFilter={selectedFilter}
         setSelectedFilter={setSelectedFilter}
       />
@@ -124,23 +152,14 @@ function App() {
           onKeyDown={addTodo}
         />
         {todoList.length === 0 && <p>No todo items</p>}
-        {todoList
-          .filter((todo) => {
-            if (selectedFilter === "All") {
-              return true;
-            }
-            if (selectedFilter === "Important") return todo.isImportant;
-            if (selectedFilter === "Completed") return todo.isCompleted;
-            if (selectedFilter === "Delete") return todo.isDelete;
-          })
-          .map((todo) => (
-            <TodoItem
-              key={todo.id}
-              {...todo}
-              handeCompleteCheckbox={handleCompleteCheckbox}
-              handleShowSidebar={handleShowSidebar}
-            />
-          ))}
+        {filterTodo.map((todo) => (
+          <TodoItem
+            key={todo.id}
+            {...todo}
+            handeCompleteCheckbox={handleCompleteCheckbox}
+            handleShowSidebar={handleShowSidebar}
+          />
+        ))}
         {showSidebar && (
           <div ref={sidebarRef} style={{ position: "fixed", right: 0, top: 0 }}>
             <Sidebar

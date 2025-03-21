@@ -1,5 +1,6 @@
 import { CheckCircle, List, Star, Trash2 } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { useMemo, useState } from "react";
+import CategoryList from "./CategoryList";
 
 const FILTER_ITEM = [
   { id: "All", label: "All", icon: <List size={24} /> },
@@ -8,7 +9,13 @@ const FILTER_ITEM = [
   { id: "Delete", label: "Delete", icon: <Trash2 size={24} /> },
 ];
 
-const FilterPanel = ({ selectedFilter, setSelectedFilter, todoList }) => {
+const FilterPanel = ({
+  selectedFilter,
+  setSelectedFilter,
+  todoList,
+  search,
+  setSearch,
+}) => {
   const [count, setCount] = useState({
     All: 0,
     Completed: 0,
@@ -16,8 +23,7 @@ const FilterPanel = ({ selectedFilter, setSelectedFilter, todoList }) => {
     Delete: 0,
   });
 
-  useEffect(() => {
-    // Cập nhật lại count mỗi khi todoList thay đổi
+  useMemo(() => {
     const newCount = todoList.reduce(
       (acc, cur) => {
         if (cur.isCompleted) acc.Completed += 1;
@@ -30,7 +36,11 @@ const FilterPanel = ({ selectedFilter, setSelectedFilter, todoList }) => {
     );
 
     setCount(newCount);
-  }, [todoList]); // Khi todoList thay đổi, cập nhật lại count
+
+    return newCount;
+  }, [todoList]);
+
+  // console.log(filter); // Sử dụng biến để tránh cảnh báo ESLint
 
   return (
     <div className="filter-panel">
@@ -39,6 +49,8 @@ const FilterPanel = ({ selectedFilter, setSelectedFilter, todoList }) => {
         placeholder="Search"
         name="search"
         className="search-input"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
       />
       <div className="filter-grid">
         {FILTER_ITEM.map((item) => (
@@ -56,6 +68,8 @@ const FilterPanel = ({ selectedFilter, setSelectedFilter, todoList }) => {
           </div>
         ))}
       </div>
+
+      <CategoryList/>
     </div>
   );
 };
