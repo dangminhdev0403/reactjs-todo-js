@@ -69,7 +69,7 @@ const FilterPanel = ({
         ))}
       </div>
 
-      <CategoryList/>
+      <CategoryList todoList={todoList} />
     </div>
   );
 };
